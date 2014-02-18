@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <modules>
+        <CosmoCommerce_Affiliate>
+            <version>0.0.1</version>
+        </CosmoCommerce_Affiliate>
+    </modules>
+    <global>
+        <blocks>
+            <cosmocommerce_affiliate>
+                <class>CosmoCommerce_Affiliate_Block</class>
+            </cosmocommerce_affiliate>
+        </blocks>
+        <models>
+            <cosmocommerce_affiliate>
+                <class>CosmoCommerce_Affiliate_Model</class>
+            </cosmocommerce_affiliate>
+        </models>
+        <events>
+            <controller_front_init_before>
+                <observers>
+                    <cosmocommerce_affiliate>
+                        <class>cosmocommerce_affiliate/observer</class>
+                        <method>captureReferral</method>
+                        <type>singleton</type>
+                    </cosmocommerce_affiliate>
+                </observers>
+            </controller_front_init_before>
+            <sales_order_payment_pay>
+                <observers>
+                    <cosmocommerce_orderpaid>
+                        <type>singleton</type>
+                        <class>cosmocommerce_affiliate/observer</class>
+                        <method>orderPaid</method>
+                    </cosmocommerce_orderpaid>
+                </observers>
+            </sales_order_payment_pay >   
+        </events>
+    </global><!--
+    <frontend>
+        <layout>
+            <updates>
+                <cosmocommerce_affiliate module="CosmoCommerce_Affiliate">
+                    <file>cosmocommerce_affiliate.xml</file>
+                </cosmocommerce_affiliate>
+            </updates>
+        </layout>
+    </frontend>-->
+    <default>
+        <cosmocommerce_affiliate>
+            <cookie>
+                <timeout>30</timeout>
+            </cookie>
+        </cosmocommerce_affiliate>
+    </default>
+</config>
