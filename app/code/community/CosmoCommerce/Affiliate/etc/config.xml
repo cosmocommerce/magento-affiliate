@@ -34,7 +34,16 @@
                         <method>orderPaid</method>
                     </cosmocommerce_orderpaid>
                 </observers>
-            </sales_order_payment_pay >   
+            </sales_order_payment_pay >  
+            <checkout_submit_all_after>
+                <observers>
+                    <cosmocommerce_orderplace>
+                        <type>singleton</type>
+                        <class>cosmocommerce_affiliate/observer</class>
+                        <method>orderPlaced</method>
+                    </cosmocommerce_orderplace>
+                </observers>
+            </checkout_submit_all_after> 
         </events>
     </global><!--
     <frontend>

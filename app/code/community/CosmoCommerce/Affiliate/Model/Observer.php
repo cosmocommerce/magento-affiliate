@@ -31,6 +31,10 @@ class CosmoCommerce_Affiliate_Model_Observer
         $utmSource = $frontController->getRequest()
             ->getParam('utm_source', false);
 
+        if (!$utmSource) {
+        $utmSource = $frontController->getRequest()
+            ->getParam('adsource', false);
+        }
         if ($utmSource) {
             Mage::getModel('core/cookie')->set(
                 self::COOKIE_KEY_SOURCE, 
@@ -44,7 +48,7 @@ class CosmoCommerce_Affiliate_Model_Observer
             ->getParam('txId', false);
         if ($utmId) {
             Mage::getModel('core/cookie')->set(
-                self::COOKIE_KEY_SOURCE, 
+                self::COOKIE_KEY_ID, 
                 $utmId, 
                 $this->_getCookieLifetime()
             );
@@ -53,19 +57,48 @@ class CosmoCommerce_Affiliate_Model_Observer
         Mage::log($utmSource,null,'cps.log');
         Mage::log($utmId,null,'cps.log');
     }
-
+    public function orderPlaced(Varien_Event_Observer $observer)
+    {
+        $order = $observer->getEvent()->getOrder();
+        $orderid=$order->getIncrementId();
+        $amount = $order->getGrandTotal() - $order->getShippingAmount();
+        $cpsid= Mage::getModel('core/cookie')->get(CosmoCommerce_Affiliate_Model_Observer::COOKIE_KEY_ID);
+        $cpstype= Mage::getModel('core/cookie')->get(CosmoCommerce_Affiliate_Model_Observer::COOKIE_KEY_SOURCE);
+        $string=$cpstype."|".$cpsid;
+        $order->setData('onestepcheckout_customercomment',$string)->save();
+        Mage::log('order '.$orderid.'placed',null,'cps.log');
+        Mage::log($string,null,'cps.log');
+        Mage::log($amount,null,'cps.log');
+    }
     public function orderPaid(Varien_Event_Observer $observer)
     {
        
-        $order = $event->getInvoice()->getOrder(); // Mage_Sales_Model_Order
+        $order = $observer->getInvoice()->getOrder(); // Mage_Sales_Model_Order
+        $amount = $order->getGrandTotal() - $order->getShippingAmount();
+        $data=$order->getData('onestepcheckout_customercomment');
+        $cpsid="";
+        $cpstype="";
+        $orderid=$order->getIncrementId();
+        if($data){
+            $data=explode('|',$data);
+            if(isset($data[0])){
+                $cpstype=$data[0];
+            }
+            if(isset($data[1])){
+                $cpsid=$data[1];
+            }
+        }
+        if($cpstype=="CHINESEAN"){
+        
+            $return=$this->httppost('https://www.chinesean.com/affiliate/tracking3.do?pId=11282&tracking='.$orderid.'&cpa=&cpl=&cps='.$amount.',TIERID&txId='.$cpsid,'','GET');
+            return $this;
+        }
     	/*
     		- Check order amount
     		- Get customer object
     		- Set Group id
     		- $customer->save();
     	*/
-    	return $this;
-        $return=$this->httppost('https://www.chinesean.com/affiliate/tracking3.do?pId=11282&tracking=100000184&cpa=&cpl=&cps=228,TIERID&txId=be14444518d45','','GET');
     }
 
     protected function _getCookieLifetime()
